@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>GPS 專業監測儀表板 v0.3.1 Ultra</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header>
+    <div class="header-main">
+      <div>
+        <h1>GPS 專業監測儀表板 <span class="version">v0.3.1 Ultra</span></h1>
+        <p class="subtitle">即時監控定位品質、GNSS 系統分佈、衛星訊號與位置誤差估計</p>
+      </div>
+      <div class="fix-badge-wrapper">
+        <div id="fix_status_badge" class="fix-badge fix-badge-unknown">狀態未知</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel panel-wide">
+<div class="panel sub-panel status-panel">
+          <h2>定位狀態</h2>
+          <div class="status-cards">
+
+            <div class="status-card">
+              <h3>時間資訊</h3>
+              <div class="status-grid">
+                <div class="info-item"><span class="label">伺服器最後更新：</span><span id="last_update" class="value">--</span></div>
+                <div class="info-item"><span class="label">GPS UTC 日期：</span><span id="date_utc" class="value">--</span></div>
+                <div class="info-item"><span class="label">GPS UTC 時間：</span><span id="time_utc" class="value">--</span></div>
+                <div class="info-item"><span class="label">日出時間 (台灣 UTC+8)：</span><span id="sunrise_utc" class="value">--</span></div>
+                <div class="info-item"><span class="label">日落時間 (台灣 UTC+8)：</span><span id="sunset_utc" class="value">--</span></div>
+              </div>
+            </div>
+
+            <div class="status-card">
+              <h3>Fix 與品質</h3>
+              <div class="status-grid">
+                <div class="info-item"><span class="label">Fix 類型：</span><span id="fix_type" class="value">--</span></div>
+                <div class="info-item"><span class="label">Fix 品質：</span><span id="fix_quality" class="value">--</span></div>
+                <div class="info-item"><span class="label">使用中衛星數：</span><span id="sats_in_use" class="value">--</span></div>
+                <div class="info-item"><span class="label">PDOP（綜合）：</span><span id="pdop" class="value">--</span></div>
+                <div class="info-item"><span class="label">HDOP（水平）：</span><span id="hdop" class="value">--</span></div>
+                <div class="info-item"><span class="label">VDOP（垂直）：</span><span id="vdop" class="value">--</span></div>
+              </div>
+            </div>
+
+            <div class="status-card">
+              <h3>位置與運動</h3>
+              <div class="status-grid">
+                <div class="info-item"><span class="label">緯度：</span><span id="lat" class="value">--</span></div>
+                <div class="info-item"><span class="label">經度：</span><span id="lng" class="value">--</span></div>
+                <div class="info-item"><span class="label">高度 (MSL)：</span><span id="alt" class="value">--</span></div>
+                <div class="info-item"><span class="label">地面速度：</span><span id="speed" class="value">--</span></div>
+                <div class="info-item"><span class="label">行進方向：</span><span id="course" class="value">--</span></div>
+                <div class="info-item"><span class="label">磁偏角：</span><span id="magvar" class="value">--</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        
+
+        
+
+      <div class="status-compass-row">
+<div class="panel sub-panel mid-panel">
+          <h2>方位與速度儀表</h2>
+          <div class="compass-speed-wrapper">
+            <canvas id="compass_canvas" width="220" height="220"></canvas>
+            <div class="metrics-column">
+              <div class="error-card">
+                <h3>誤差估計</h3>
+                <div class="error-row">
+                  <span class="label">EPE（水平）：</span><span id="epe" class="value">--</span>
+                </div>
+                <div class="error-row">
+                  <span class="label">CEP50：</span><span id="cep50" class="value">--</span>
+                </div>
+                <div class="error-row">
+                  <span class="label">CEP95：</span><span id="cep95" class="value">--</span>
+                </div>
+                <div class="error-row">
+                  <span class="label">追蹤中衛星總數：</span><span id="sats_total" class="value">--</span>
+                </div>
+              </div>
+              <div class="gnss-block">
+                <h3 class="gnss-title">GNSS 系統分佈</h3>
+                <div id="gnss_cards" class="gnss-cards">
+                </div>
+              </div>
+            </div>
+          </div>
+
+                
+
+                </div>
+
+<div class="panel sub-panel skyglobe-panel">
+          <h2>Sky Globe</h2>
+          <div class="sky-globe-container">
+            <canvas id="sky_globe" width="320" height="320"></canvas>
+          </div>
+          <div class="legend sky-globe-legend">
+            <span class="legend-item used">使用中</span>
+            <span class="legend-item unused">可見未使用</span>
+            <span class="legend-item low">SNR 過低</span>
+          </div>
+        </div>
+        
+<div class="panel sub-panel orbit-panel">
+          <h2>衛星軌跡 / 地球軌道</h2>
+          <div class="orbit-map-container">
+            <canvas id="orbit_map" width="917" height="463"></canvas>
+            <div class="orbit-legend">
+              <span class="legend-dot user"></span><span class="legend-label">你的位置</span>
+              <span class="legend-dot sat"></span><span class="legend-label">衛星子星點</span>
+            </div>
+          </div>
+          <div class="orbit-info">
+            <div class="info-row"><span class="label">選取衛星：</span><span id="orbit_sat_label" class="value">--</span></div>
+            <div class="orbit-select-row">
+              <span class="label">手動選擇：</span>
+              <select id="orbit_sat_selector"></select>
+            </div>
+            <div class="info-row"><span class="label">子星點緯度：</span><span id="orbit_lat" class="value">--</span></div>
+            <div class="info-row"><span class="label">子星點經度：</span><span id="orbit_lon" class="value">--</span></div>
+            <div class="info-row"><span class="label">軌道高度：</span><span id="orbit_alt" class="value">--</span></div>
+            <div class="info-row"><span class="label">軌道速度：</span><span id="orbit_vel" class="value">--</span></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <section class="panel">
+      <h2>天空圖（Sky Plot）</h2>
+      <div class="sky-container">
+        <canvas id="skyplot" width="420" height="420"></canvas>
+      </div>
+      <div class="legend">
+        <span class="legend-item used">■ 用於 Fix 衛星</span>
+        <span class="legend-item unused">■ 僅可見未使用</span>
+        <span class="legend-item low">■ 低 SNR</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>衛星列表</h2>
+      <div class="sat-table-wrapper">
+        <table id="sat_table">
+        <thead>
+          <tr>
+            <th>PRN</th>
+            <th>系統</th>
+            <th>仰角 (°)</th>
+            <th>方位角 (°)</th>
+            <th>SNR (dB)</th>
+            <th>用於 Fix</th>
+            <th>最後接收時間</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="note">
+        SNR 後方彩色小格：以紅 → 綠表示訊號強度，多格代表訊號較強。
+      </p>
+    </section>
+
+    <section class="panel panel-wide">
+      <h2>最近 NMEA 訊息</h2>
+      <pre id="raw_nmea" class="nmea-box">--</pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>GPS 專業監測 v0.3.1 Ultra</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
